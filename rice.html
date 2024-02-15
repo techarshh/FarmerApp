@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Royal Crop - Rice</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #1a237e; /* Royal Blue */
+            color: #fff;
+            text-align: center;
+            padding: 1em;
+        }
+
+        nav {
+            background-color: #757575; /* Gray for contrast */
+            padding: 0.5em;
+            text-align: center;
+        }
+
+        nav a {
+            color: #fff;
+            text-decoration: none;
+            padding: 1em;
+            margin: 0 0.5em;
+            font-weight: bold;
+        }
+
+        section {
+            padding: 2em;
+            background-color: #1a237e; /* Royal Blue */
+            color: #fff;
+            text-align: center;
+        }
+
+        .upload-section {
+            margin-top: 20px;
+        }
+
+        .result-section {
+            margin-top: 20px;
+            display: none; /* Hide initially */
+        }
+
+        footer {
+            background-color: #1a237e;
+            color: #fff;
+            text-align: center;
+            padding: 1em;
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Royal Crop - Rice</h1>
+    </header>
+
+    <nav>
+        <a href="#">Home</a>
+        <a href="#">About</a>
+        <a href="#">Services</a>
+        <a href="#">Contact</a>
+    </nav>
+
+    <section class="center upload-section">
+        <p>Upload your crop image</p>
+        <input type="file" id="imageInput" accept="image/*">
+        <button onclick="uploadImage()">Upload</button>
+    </section>
+
+    <section class="center result-section">
+        <h2>Here is the result</h2>
+        <p>Loading...</p>
+        <!-- Result content will be displayed here -->
+    </section>
+
+    <footer>
+        &copy; 2024 Royal Crop - Rice. All rights reserved.
+    </footer>
+</body>
+
+   
+
+<!-- Include Axios in your HTML file -->
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+<script>
+    // Your JavaScript code using Axios
+
+    function uploadImage() {
+        document.querySelector('.upload-section').style.display = 'none';
+        document.querySelector('.result-section').style.display = 'block';
+
+        const fileInput = document.getElementById('imageInput');
+        const resultSection = document.querySelector('.result-section');
+        const loadingMessage = resultSection.querySelector('p');
+
+        // Check if a file is selected
+        if (fileInput.files.length > 0) {
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+
+            // Display loading message
+            loadingMessage.innerHTML = 'Loading...';
+
+            // Read the file as base64 using FileReader
+            reader.onload = function () {
+                const imageBase64 = reader.result.split(',')[1];
+
+                // Send the image to the API using Axios
+                axios.post("https://classify.roboflow.com/rice-detection-2-nkcu2/1", imageBase64, {
+                    params: {
+                        api_key: "JNuQpEhF9KVKN7FzEXpc"
+                    },
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    }
+                })
+                .then(function(response) {
+                    const myJSON = JSON.stringify(response.data["predictions"][0]["class"]);
+                    loadingMessage.innerHTML = myJSON;
+                    console.log(response.data);
+                })
+                .catch(function(error) {
+                    console.log(error.message);
+                    loadingMessage.innerHTML = 'Error occurred. Please try again.';
+                });
+            };
+
+            // Read the file as base64
+            reader.readAsDataURL(file);
+        } else {
+            loadingMessage.innerHTML = 'Please select an image.';
+        }
+    }
+</script>
+
+
+
+</html>
